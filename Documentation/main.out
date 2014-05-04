@@ -1,0 +1,35 @@
+\BOOKMARK [1][-]{section.1}{Overview}{}% 1
+\BOOKMARK [1][-]{section.2}{Dependencies}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{GLEW}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{GLM}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{GLFW}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Eigen}{section.2}% 6
+\BOOKMARK [1][-]{section.3}{Classes}{}% 7
+\BOOKMARK [2][-]{subsection.3.1}{Mesh}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.2}{DrawMesh}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.3}{VBuffer}{section.3}% 10
+\BOOKMARK [2][-]{subsection.3.4}{IBuffer}{section.3}% 11
+\BOOKMARK [2][-]{subsection.3.5}{EditMesh}{section.3}% 12
+\BOOKMARK [2][-]{subsection.3.6}{OBJLoader}{section.3}% 13
+\BOOKMARK [2][-]{subsection.3.7}{WorldState}{section.3}% 14
+\BOOKMARK [2][-]{subsection.3.8}{ControlState}{section.3}% 15
+\BOOKMARK [2][-]{subsection.3.9}{RenderState}{section.3}% 16
+\BOOKMARK [2][-]{subsection.3.10}{Texture}{section.3}% 17
+\BOOKMARK [3][-]{subsubsection.3.10.1}{Texture2D}{subsection.3.10}% 18
+\BOOKMARK [3][-]{subsubsection.3.10.2}{TextureCubeMap}{subsection.3.10}% 19
+\BOOKMARK [1][-]{section.4}{Auxiliary Functions}{}% 20
+\BOOKMARK [2][-]{subsection.4.1}{MeshUtils.h}{section.4}% 21
+\BOOKMARK [2][-]{subsection.4.2}{ShaderUtils.h}{section.4}% 22
+\BOOKMARK [2][-]{subsection.4.3}{TextureUtils.h}{section.4}% 23
+\BOOKMARK [1][-]{section.5}{Half-Edge Data Structure}{}% 24
+\BOOKMARK [2][-]{subsection.5.1}{Components}{section.5}% 25
+\BOOKMARK [2][-]{subsection.5.2}{Boundaries}{section.5}% 26
+\BOOKMARK [2][-]{subsection.5.3}{Common Operations}{section.5}% 27
+\BOOKMARK [3][-]{subsubsection.5.3.1}{Face \040Vertex Iteration}{subsection.5.3}% 28
+\BOOKMARK [3][-]{subsubsection.5.3.2}{Vertex 1-Ring Iteration}{subsection.5.3}% 29
+\BOOKMARK [3][-]{subsubsection.5.3.3}{Vertex \040Face Iteration}{subsection.5.3}% 30
+\BOOKMARK [3][-]{subsubsection.5.3.4}{Face Neighbor Iteration}{subsection.5.3}% 31
+\BOOKMARK [2][-]{subsection.5.4}{Implementation Details}{section.5}% 32
+\BOOKMARK [2][-]{subsection.5.5}{Rationale}{section.5}% 33
+\BOOKMARK [1][-]{section.6}{Common Mistakes}{}% 34
+\BOOKMARK [2][-]{subsection.6.1}{Eigen Mistakes}{section.6}% 35

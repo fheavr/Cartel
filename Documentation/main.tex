@@ -1,0 +1,200 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{mathtools}
+
+\usepackage[margin=1.25in]{geometry}
+
+\title{Cartel Documentation}
+\author{Russell Gillette \& Darcy Harrison}
+\date{April 2014}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+Cartel is a mesh visualization and modification tool designed for simplicity and clarity. It is built on top of a basic OpenGL 3.3 environment using the GLFW windowing system, and enables complex rendering effects through the easy use of shaders and textures. Deployment and compilation are simple due to the use of few, and common, dependencies.
+
+\section{Dependencies}
+The libraries included with the build are for VisualStudio 2012 or later, and the source code includes some (though not many) C++ 11 operations, and thus will not work with earlier compilers. That said, there is nothing OS specific within the code, and alternative libraries are easily acquired at the below links.
+
+\subsection{GLEW}
+GLEW is the extension wrangler library for OpenGL that allows the use of newer OpenGL functionality on computers that do not support it. You will never have to do anything using this library, its just included, and thus worth mentioning. Its home webpage is here:
+\begin{center}\url{http://glew.sourceforge.net/}\end{center}
+
+\subsection{GLM}
+GLM is the open gl math extensions and provides a lot of useful functionality when interfacing with GLSL, the OpenGL shader language. This library provides types, and functions on those types used SOLELY FOR RENDERING. This is important, because the glm types do not offer double precision, and do not interface easily with Eigen. Use glm only for visual effects or when passing data to the GPU in main.
+\begin{center}\url{http://glm.g-truc.net/0.9.5/index.html}\end{center}
+
+\subsection{GLFW}
+GLFW is the windowing system used by Cartel. It is a common replacement for GLUT, and was chosen due to its nicer rendering loop and newer interface. This windowing library is cross-platform, allowing the deployment of this system across OSes, but does, at the time of writing this, make setting up this project on a linux system with integrated graphics difficult.
+\begin{center}\url{http://www.glfw.org/}\end{center}
+
+\subsection{Eigen}
+Eigen is the back-end linear-algebra library used by Cartel, and the largest source of complexity within the project. This library makes heavy use of templates, but is well documented. Documentation can found here:
+\begin{center}\url{http://eigen.tuxfamily.org/index.php?title=Main\_Page}\end{center}
+
+Please see \S\ref{sec:mistakes} for common usage mistakes.
+
+\section{Classes}
+
+\subsection{Mesh}
+Mesh is the main mesh container class, containing both the DrawMesh for rendering the loaded mesh, and the EditMesh for operating on the mesh. It exposes both draw operations from the DrawMesh, and edit operations from the EditMesh, so any functionality that has been added to either of those classes will need to be propagated into this class as well. Due to this separation of rendering and modification it is important to increment the edit count within EditMesh after each modification so that the changes can be properly propagated.
+
+\subsection{DrawMesh}
+The DrawMesh is responsible for mesh rendering, and contains the mesh data as a formatted block of memory with 32bit precision, rather than the 64bit precision offered when editing. This class is only ever populated from the EditMesh (not the other way). Data is stored within a VBuffer, which allows for various different data packing schemes, and uses the IBuffer to properly associate the data block with faces. 
+
+\subsection{VBuffer}
+The VBuffer class contains the allocated block of memory with a 32bit precision version of the mesh. It also contains the packing information for the data, such as the offset to the start of a given attribute (position/normal/texture data) and the stride between specific elements.
+
+\subsection{IBuffer}
+The IBuffer class is a simple buffer containing only the face index (or other index) information to be used in rendering the mesh.
+
+\subsection{EditMesh}
+The EditMesh class contains a high precision version of the mesh in a half-edged data structure (see \S\ref{sec:heds}). It is from this mesh which the DrawMesh is populated.
+
+As of right now, normals are not stored in the edit mesh, but are calculated upon transfer to the DrawMesh as face normals (thus vertices are duplicated per face). Texture Coordinates are not saved.
+
+\subsection{OBJLoader}
+This class does what you would expect it to. It parses .obj files. An interface from which to use this functionality is provided in "MeshUtils.h".
+
+\subsection{WorldState}
+This class is a singleton to contain "world" or global data, and is responsible for toggling between shaders, returning the current shader in the GL state, maintaining the tranformation matrices, and storing materials, textures, and lights to be used inside of shaders. THIS CLASS IS NOT RESPONSIBLE FOR INPUTS OR WINDOW INFORMATION. This global singleton is accessible in main as "w\_state".
+
+\subsection{ControlState}
+This class is a singleton responsible for input and window state, as well as all GLFW callbacks. It is accessible in main as "c\_state".
+
+\subsection{RenderState}
+RenderState objects contain the GLbuffer id's and VertexArray id's that have been allocated by opengl. When passed to the Mesh as initialization it specifies which set of buffers to use when rendering. It is safe to use only one RenderState, but performance may be gained by thoughtful allocation.
+
+\subsection{Texture}
+Textures are as of right now un-used, but the class is provided should texturing or texture effects be desired for rendering. This class is meant to be an interface for texture-type specific implementations, and thus should never be used on its own.
+
+\subsubsection{Texture2D}
+Defined in "TextureTypes.h", this class extends Texture and provides all of the necessary state setup for use with 2D Textures. (Note that these textures must be square. For non-square textures, Rectangle Textures will need to be implemented)
+
+\subsubsection{TextureCubeMap}
+Defined in "TextureTypes.h", this class extends Texture and provides all of the necessary state setup and interfaces for use with Cube Map Textures.
+
+\section{Auxiliary Functions}
+\subsection{MeshUtils.h}
+"MeshUtils.h" contains utility functions that operate on meshes, or construct meshes, but which are not specific to a given mesh.
+
+\subsection{ShaderUtils.h}
+"ShaderUtils.h" provides utility functions for shaders, such as functions to load shaders from files, build shaders, and compile shader programs.
+
+\subsection{TextureUtils.h}
+"TextureUtils.h" provides utility functions for textures including the construction of texture objects from files.
+
+\section{Half-Edge Data Structure}
+\label{sec:heds}
+Cartel uses a "half-edge" data structure. Each edge of a 2-manifold triangle mesh is represented by a pair of directed "half-edges", one on each adjacent face or hole. The half-edges form a counter-clockwise directed loop by linking to the next (forward adjacent) half-edge in the face or hole. The triangles of the mesh are each defined implicitly by the directed loop of 3 half-edges. A half-edge also references the {\it vert}ex it originates on, the {\it face} it resides in, and the {\it twin} half-edge which is resides on the opposite side of the edge. 
+
+\subsection{Components}
+\label{sec:hedsComp}
+Each half-edge requires:
+\begin{enumerate}
+\item The face it belongs to
+\item The next half-edge in the face loop, in a counter-clockwise direction. These two half-edges share exactly one vertex.
+\item The twin half-edge that is adjacent on the same vertices but in a different face. It is directed opposite of this one (ie. If this half-edge is directed $v_0 \to v_1$ the twin is directed $v_1 \to v_0$.
+\item The origin vertex of this half-edge. A half-edge directed $v_0 \to v_1$ will store a reference to $v_0$. The next half-edge in the loop
+\end{enumerate}
+
+These four components are sufficient to implement all manner of interesting geometry processing algorithms. Given an arbitrary half-edge $h$ in a triangle, the vertices can be retrieved via:
+\begin{equation}
+\begin{aligned}
+v_0 &= h.vert \\
+v_1 &= h.next.vert \\
+v_2 &= h.next.next.vert
+\end{aligned} \label{eq:FaceLoop}
+\end{equation}
+
+In order for the mesh to track the all the triangular faces, it is sufficient to store a reference to an arbitrary half-edge in each face. The vertices can be easily retrieved via the directed list of half-edges as shown in Equation~\eqref{eq:FaceLoop}.
+
+For easy traversal of a vertex 1-ring, each vertex stores a reference to an arbitrary half-edge originating from it.
+
+\subsection{Boundaries}
+Meshes are often not closed ie. there are some edges which do not have adjacent triangles on (at most) one side. The polygonal region of empty space is referred to as a {\it hole}, edges adjacent to it are referred to as boundary edges. Our half-edge data structure handles places half-edges within the hole polygon so that every half-edge has a well defined twin. An alternative option (not pursued in this library) is to use a sentinel value to indicate when a half-edge does not have a twin. There are other benefits to our approach which merit its use. Half-edges in holes reference a special face reserved for holes. Holes are essentially treated just like any other face, except they have a special index, can have arbitrary degree (ie. not restricted to triangles), and are wound in opposite direction (ie. clockwise).
+
+\subsection{Common Operations}
+\subsubsection{Face $\to$ Vertex Iteration}
+Given a face $f_i$, we can visit all the vertices in the face by starting from the arbitrary half-edge $H(f_i)$ associated with it.
+\begin{equation}
+\begin{aligned}
+h &= H(f_i) \\
+v_0 &= h.vert \\
+v_1 &= h.next.vert \\
+v_2 &= h.next.next.vert
+\end{aligned} \label{eq:FaceVertIteration}
+\end{equation}
+
+\subsubsection{Vertex 1-Ring Iteration}
+Given a vertex $v_i$, we can visit all of the vertices $\{v_j\}$ which share an edge with $v_i$ by starting from the arbitrary half-edge $H(v_i)$ associated with the vertex, then iterating around the edges in a clockwise manner.
+\begin{equation}
+\begin{aligned}
+h_0 &= H(v_i).twin \\
+v_0 &= h_0.vert \\
+\\
+h_j &= h_{j-1}.next.twin \\
+v_j &= h_j.vert  \qquad j = 1, 2, \dots, \mathbf{Degree}(v_i)-1 \\
+\end{aligned} \label{eq:VertexRingIteration}
+\end{equation}
+
+\subsubsection{Vertex $\to$ Face Iteration}
+Given a vertex $v_i$, we can visit all of the faces that are adjacent on this vertex by starting from the arbitrary half-edge $H(v_i)$ associated with the vertex, then iterating around the faces in a clockwise manner.
+\begin{equation}
+\begin{aligned}
+h_0 &= H(v_i) \\
+f_0 &= h_0.face \\
+\\
+h_j &= h_{j-1}.twin.next \\
+f_j &= h_j.face  \qquad j = 1, 2, \dots, \mathbf{Degree}(v_i)-1 \\
+\end{aligned} \label{eq:VertFaceIteration}
+\end{equation}
+
+\subsubsection{Face Neighbor Iteration}
+Given a face $f_i$, we can visit the three neighboring faces by visiting the half-edges of $f_i$ and their twins.
+
+\begin{equation}
+\begin{aligned}
+h &= H(f_i) \\
+f_0 &= h.twin.face \\
+f_1 &= h.next.twin.face \\
+f_2 &= h.next.next.twin.face \\
+\end{aligned} \label{eq:VertFaceIteration}
+\end{equation}
+
+\subsection{Implementation Details}
+The half-edge data structure is implemented more or less as described in \S~\ref{sec:hedsComp}. All arrays are implemented via {\it std::vector< T >}. 
+\begin{itemize}
+\item There is an array of {\it half\_edge} structures each of which stores: the integer index of the {\it next} half-edge in its directed face loop, the integer index of the {\it twin} half-edge adjacent on the same vertices, the integer index of the {\it face} this half-edge is associated with, and the integer index of the {\it vert}ex that this half-edge originates out of.
+\item There is an array with an entry for each vertex, which stores the integer index of an arbitrary half-edge which originates from that vertex. There is another array of {\it Eigen::Vector3d} objects for the location of each vertex in space.
+\item There is an array with an entry for each face, which stores the integer index of an arbitrary half-edge which defines that face.
+\end{itemize}
+
+\subsection{Rationale}
+
+Storing indexes can be problematic when deleting half-edges, faces, etc. Our current approach switches the index at the back side of the id array for the position being deleted prior to removing the index, such that no space is left in the array. This approach has the unfortunate drawback that it re-orders ids, and thus when traversing one of the index lists it is important to iterate in reverse order (such that all out of order ids have already been traversed).
+
+In our implementation we considered many alternatives to this scheme, but found all of them to have their own problems. These alternatives include: Storing permanent ids, flagging objects as deleted but not removing them, or else storing ids within a linked list data-structure (each element allocated on the heap). Permanent ids increases the lookup time, requiring either a hash-table or binary look-up. Hash-tables incur a non-trivial overhead, and binary look-up increases the traversal time of the mesh significantly. Flagging objects as deleted results in non-existent elements remaining, and thus requires the non-intuitive check for deleted elements while traversing the mesh. Finally, linked-list data stores do not allow random access, thus having a large traversal time (unless pointers are stored). More importantly, each element would require an allocation, which is extremely costly.
+
+\section{Common Mistakes}
+\label{sec:mistakes}
+
+\subsection{Eigen Mistakes}
+\begin{itemize}
+\item std data-structures must use the aligned allocators provided by eigen
+\begin{verbatim}
+std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> >
+\end{verbatim}
+
+\item due to implicit type casts, sometimes operations will not work. This is resolved by proper placement of parenthesis
+\begin{verbatim}
+<double> * (Eigen::Rotation2Dd(<double>) * <Eigen::Vector2d>)
+\end{verbatim}
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,11 @@
+Cartel:
+
+Derived from:
+
+Cartography: the act of making maps, and thus projections and mappings
+which are disticly relevant in geometric processing
+
+Cartel: a union of one or more people to fix something in their favor. In this case a union of
+students and professors to fix the broken modeling software.
+
+Poop!
